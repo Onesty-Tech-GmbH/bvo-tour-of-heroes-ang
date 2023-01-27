@@ -1,0 +1,65 @@
+= Angular SPA im Onesty-Tech Portal
+:toc:
+
+Dieses Projekt beschreibt die notwendigen Anpassungen, damit eine SPA im Onesty-Tech BVO-Portal gestartet werden kann. +
+Die SPA bleibt dabei gleichzeitig standalone lauffähig.
+
+Die 4 relevanten Schritte wurden alle separat als einzelne Commits ausgeprägt.
+Als Beispielprojekt kommt das Router-Tutorial https://angular.io/guide/router-tutorial-toh#router-tutorial-tour-of-heroes[Tour of Heroes] zum Einsatz, das Schritt für Schritt erweitert wurde.
+
+== Schritt 1: manuelles Bootstrapping
+
+Hier geht es darum, das die SPA beim Laden des Main-Modules nicht automatisch bootstrapped wird, sondern das Portal dafür eine Methode im Window bereitgestellt bekommt.
+
+Damit die lokale Entwicklung trotzdem wie gewohnt funktioniert, wird diese neue Mount-Methode in der Standard-HTML einfach aufgerufen.
+
+== Schritt 2: Asset-Manifest erzeugen
+Damit das Portal die JS-Sourcen + CSS laden kann, muss es diese auch kennen. Dafür muss das Projekt eine Asset-Manifest JSON Datei erzeugen und im Hauptverzeichnis des SPA-Builds hinterlegen.
+
+Das Portal unterstützt aktuell zwei verschiedene JSON Formate:
+
+- Create-React-App v4/v5 Format
+- Vite Format (neu)
+
+Das Webpack Format ist sehr einfach gehalten und wurde daher auch hier im Beispiel Projekt verwendet.
+
+== Schritt 3: History-Navigation ermöglichen
+Das Portal liefert den SPAs beim Starten eine Instanz der https://www.npmjs.com/package/history[History] Implementierung mit. Diese sorgt für eine nahtlose Integration und versteckt die verschiedenen "Mount"-Pfade der SPAs untereinander. +
+Des Weiteren ermöglicht sie auch eine Navigation von einer SPA in eine andere über den speziellen Pfad `/redirect?to=...`
+
+Der Angular (Browser)Router benutzt normalerweise direkt die History-API des Browsers. Diese Implementierung wird in diesem Schritt ersetzt durch eine eigene `PlatformLocation` Implementierung die auf der vom Portal gelieferten History Instanz arbeitet. +
+Auch hier arbeitet die Lösung im Standalone Modus mit einer selbst erstellen History-Instanz.
+
+== Schritt 4: OpenID-Connect Integration
+Mithilfe des Keycloak-Adapters wird eine Integration für Keycloak aufgezeigt, wobei im Fall der Portal-Runtime auch die vom Portal gelieferten Tokens verwendet werden. D.h. die SPA redirected nicht selbst zum OpenID-Connect Login.
+
+
+== Extra-Schritt: Docker-Image build für die SPA
+Wir verpacken unsere SPAs als Docker-Image mit nginx.
+Die Schritte hier haben nicht direkt etwas mit der Portal-Integration zu tun.
+
+Es sind dabei zwei Aspekte hervorzuheben:
+
+- Access-Control-Allow-Origin Header für den Zugriff des Portals auf die `asset-manifest.json` Datei via fetch
+- via Environment-Variablen anpassbare `config.js` Datei um das Image Stage-unabhängig bauen zu können aber trotzdem notwendige Variablen in die Anwendung zu bekommen.
+
+Die SPA-Konfiguration wird später im Portal-Menu für die SPA entsprechend über eine URL konfiguriert und in das Window geladen.
+
+_Für die Zukunft wird hier noch eine Lösung angestrebt die einen Module Ansatz verfolgt, d.h. `jsConfigUrl` wird dynamisch als Modul geladen und kann dann von der SPA auch als Modul importiert werden._
+
+[source, json]
+.Beispiel einer SPA-Konfiguration im Portal
+----
+{
+  "name": "Tour-of-Heroes",
+  "category": "Administration",
+  "url": "http://dev-frontends.bvo.local/tour-of-heroes",
+  "jsConfigUrl": "http://dev-frontends.bvo.local/tour-of-heroes/config.js",
+  "mountPath": "/tour-of-heroes",
+  "mountFunc": "mount",
+  "type": "spa-iframe",
+  "manifestType": "webpack",
+  "navigation": "history5"
+}
+----
+
