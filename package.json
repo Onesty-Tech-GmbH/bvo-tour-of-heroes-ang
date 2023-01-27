@@ -28,6 +28,8 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^15.0.0-rc.1",
+    "@angular-builders/custom-webpack": "^15.0.0",
+    "webpack-manifest-plugin": "^5.0.0",
     "@angular/cli": "^15.0.0-rc.1",
     "@angular/compiler-cli": "^15.0.0-rc.1",
     "@types/jasmine": "~4.3.0",
