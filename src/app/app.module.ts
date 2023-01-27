@@ -12,6 +12,9 @@ import { ComposeMessageComponent } from './compose-message/compose-message.compo
 import { AppRoutingModule } from './app-routing.module';
 import { HeroesModule } from './heroes/heroes.module';
 import { AuthModule } from './auth/auth.module';
+import {DOCUMENT, PlatformLocation} from "@angular/common";
+import {PortalPlatformLocation} from "./PortalPlatformLocation";
+import * as H from "history";
 
 @NgModule({
   imports: [
@@ -27,6 +30,13 @@ import { AuthModule } from './auth/auth.module';
     ComposeMessageComponent,
     PageNotFoundComponent
   ],
+  providers: [
+    {
+      provide: PlatformLocation,
+      useFactory: platformFactory,
+      deps: [DOCUMENT, "HISTORY"]
+    }
+  ],
   bootstrap: [ AppComponent ]
 })
 export class AppModule {
@@ -37,4 +47,9 @@ export class AppModule {
 
     // console.log('Routes: ', JSON.stringify(router.config, replacer, 2));
   }
+}
+
+function platformFactory(doc: any, history: H.History) {
+  console.log("CREATE Portal Platform WITH HISTORY", history)
+  return new PortalPlatformLocation(doc, history);
 }
