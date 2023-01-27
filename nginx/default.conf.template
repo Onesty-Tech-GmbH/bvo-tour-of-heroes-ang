@@ -1,0 +1,44 @@
+#ACHTUNG: diese nginx-Config!
+
+#IMPORTANT:
+#1. the file needs to be a template (copied to /etc/nginx/templates/) to allow envsubst preprocessing on start (sub_filter replacements)
+#2. the file needs to override the default.conf in /etc/nginx/conf.d/default.conf
+server {
+  listen 3000;
+  root   /usr/share/nginx/html;
+
+#static cacheable content
+  	location ~ .*(/static/.*) {
+  		try_files $1 =404;
+    	add_header 'Access-Control-Allow-Origin' *;
+  	}
+
+  location ~ .*/config.js$ {
+  	 try_files /config.js =404;
+    sub_filter_once off;
+    sub_filter_types *;
+    sub_filter '@KEYCLOAK_URL@' ${KEYCLOAK_URL};
+    sub_filter '@KEYCLOAK_REALM@' ${KEYCLOAK_REALM};
+    sub_filter '@KEYCLOAK_CLIENT_ID@' ${KEYCLOAK_CLIENT_ID};
+
+    #add no-cache header for content in root-dir (outside of /static)
+    add_header Cache-Control "no-store, no-cache, must-revalidate";
+  }
+
+  location ~ .*/asset-manifest.json$ {
+  	 try_files /asset-manifest.json =404;
+    add_header 'Access-Control-Allow-Origin' *;
+    add_header Cache-Control "no-store, no-cache, must-revalidate";
+  }
+
+  location / {
+    index  index.html index.htm;
+    try_files $uri $uri/ /index.html;
+    #add no-cache header for content in root-dir (outside of /static)
+    add_header Cache-Control "no-store, no-cache, must-revalidate";
+  }
+
+  error_page   500 502 503 504  /50x.html;
+  location = /50x.html {
+  }
+}
