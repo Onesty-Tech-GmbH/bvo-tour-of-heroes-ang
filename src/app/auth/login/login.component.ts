@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
-import { NavigationExtras, Router } from '@angular/router';
-import { AuthService } from '../auth.service';
+import {Component} from '@angular/core';
+import {NavigationExtras, Router} from '@angular/router';
+import {AuthService} from '../auth.service';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +16,10 @@ export class LoginComponent {
 
   getMessage() {
     return 'Logged ' + (this.authService.isLoggedIn ? 'in' : 'out');
+  }
+
+  getParsedTokenString():string {
+    return this.authService.parsedToken() ? JSON.stringify(this.authService.parsedToken(),undefined, 2):"";
   }
 
   login() {
